@@ -80,10 +80,11 @@
     display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 2px;
     background:var(--surface2); border-radius:var(--radius-sm); border:1.5px solid transparent; transition:.12s;
   }
-  .bristol .bt .g{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .bristol .bt .g{width:30px;height:30px;display:flex;align-items:center;justify-content:center;}
   .bristol .bt .n{font-size:15px; font-weight:700;}
   .bristol .bt.sel{border-color:var(--accent); background:rgba(74,157,127,.14);}
-  .bristol-desc{font-size:13px; color:var(--muted); margin-top:10px; min-height:18px;}
+  .bristol-ends{display:flex; justify-content:space-between; padding:8px 4px 0; color:var(--muted); font-size:12px;}
+  .bristol-desc{font-size:13px; color:var(--muted); margin-top:8px; min-height:18px;}
 
   /* toggle rows */
   .row{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:4px 0;}
@@ -167,7 +168,7 @@
   .modal p{color:var(--muted); font-size:14.5px;}
   .bristol-legend{margin:14px 0;}
   .bristol-legend .li{display:flex; align-items:center; gap:12px; padding:7px 0; font-size:14px;}
-  .bristol-legend .li .g{width:30px;height:22px;border-radius:6px;flex-shrink:0;}
+  .bristol-legend .li .g{width:28px;height:28px;flex-shrink:0;}
 
   .disclaimer{text-align:center; color:#5a5e63; font-size:12px; padding:20px 10px 4px; line-height:1.5;}
   .toast{position:fixed; bottom:calc(84px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:#0F1113; font-weight:600; padding:12px 20px; border-radius:999px; opacity:0; pointer-events:none; transition:.25s; z-index:70; box-shadow:0 6px 20px rgba(0,0,0,.4);}
@@ -219,6 +220,7 @@
     <div class="card">
       <div class="section-title">Consistency (Bristol scale)</div>
       <div class="bristol" id="bristolSel"></div>
+      <div class="bristol-ends"><span>Firm</span><span>Loose</span></div>
       <div class="bristol-desc" id="bristolDesc">Tap a type — or leave blank for “not sure.”</div>
     </div>
 
@@ -399,6 +401,20 @@ function bristolColor(t){
   return `rgb(${mix.join(',')})`;
 }
 
+/* Bristol shape glyph — separate lumps -> smooth -> liquid. size defaults 30 */
+function bristolGlyph(t,size){
+  const s=size||30, c=bristolColor(t);
+  let inner='';
+  if(t===1) inner=`<circle cx="8.5" cy="10" r="3.4" fill="${c}"/><circle cx="18" cy="8.5" r="3" fill="${c}"/><circle cx="13.5" cy="18" r="3.7" fill="${c}"/><circle cx="22" cy="17" r="3" fill="${c}"/>`;
+  else if(t===2) inner=`<path d="M3 15 Q6.5 8.5 10.5 14 Q14 7.5 18 14 Q22 8.5 26 15 Q22 21.5 18 16 Q14 22.5 10.5 16 Q6.5 21.5 3 15Z" fill="${c}"/>`;
+  else if(t===3) inner=`<rect x="3" y="11" width="23" height="8" rx="4" fill="${c}"/><path d="M9.5 11 L10.5 19 M15 11 L14.5 19 M20.5 11 L21.5 19" stroke="#1A1D21" stroke-width="1.2" stroke-linecap="round"/>`;
+  else if(t===4) inner=`<rect x="3" y="12" width="23" height="6.5" rx="3.25" fill="${c}"/>`;
+  else if(t===5) inner=`<ellipse cx="8.5" cy="14.5" rx="4.6" ry="3.5" fill="${c}"/><ellipse cx="20" cy="13.5" rx="4" ry="3" fill="${c}"/><ellipse cx="14.5" cy="20" rx="3.5" ry="2.7" fill="${c}"/>`;
+  else if(t===6) inner=`<path d="M4 15 Q3 9.5 8.5 10.5 Q9.5 6 14.5 9.5 Q19.5 6 20.5 11.5 Q26.5 11.5 23.5 16.5 Q25.5 20.5 19.5 18.5 Q17.5 22.5 12.5 18.5 Q6.5 21.5 5.5 16.5 Q2 16.5 4 15Z" fill="${c}"/>`;
+  else inner=`<path d="M2.5 13.5 Q7 10.5 11 13.5 T19.5 13.5 T26 13.5 Q24.5 18.5 19.5 17.5 T11 17.5 T2.5 16.5 Z" fill="${c}"/><circle cx="7" cy="20.5" r="1.6" fill="${c}"/><circle cx="22" cy="20.5" r="1.4" fill="${c}"/>`;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 29 29" aria-hidden="true">${inner}</svg>`;
+}
+
 /* ---------- state ---------- */
 let form = {};
 function blankForm(){ return {bristol:null,color:null,urgency:'none',made:null,pain:'no',blood:'notsure',mucus:'notsure',smell:null,context:[],note:'',time:null}; }
@@ -439,7 +455,7 @@ function buildForm(){
   const bs=document.getElementById('bristolSel'); bs.innerHTML='';
   BRISTOL.forEach(b=>{
     const el=document.createElement('button'); el.className='bt'; el.dataset.t=b.t;
-    el.innerHTML=`<span class="g" style="background:${bristolColor(b.t)}"></span><span class="n">${b.t}</span>`;
+    el.innerHTML=`<span class="g">${bristolGlyph(b.t)}</span><span class="n">${b.t}</span>`;
     el.onclick=()=>{ form.bristol=(form.bristol===b.t?null:b.t); syncForm(); };
     bs.appendChild(el);
   });
@@ -687,7 +703,7 @@ function buildOnboardLegend(){
   const el=document.getElementById('onboardLegend'); el.innerHTML='';
   [[1,'Hard lumps — constipation'],[4,'Smooth & soft — ideal'],[7,'Watery — diarrhea']].forEach(([t,txt])=>{
     const li=document.createElement('div'); li.className='li';
-    li.innerHTML=`<span class="g" style="background:${bristolColor(t)}"></span><span><b>Type ${t}.</b> ${txt}</span>`;
+    li.innerHTML=`<span class="g" style="display:flex;align-items:center;justify-content:center">${bristolGlyph(t,26)}</span><span><b>Type ${t}.</b> ${txt}</span>`;
     el.appendChild(li);
   });
 }
