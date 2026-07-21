@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F1113">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Track">
+<title>Track</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%230F1113'/%3E%3Ccircle cx='96' cy='96' r='48' fill='none' stroke='%234A9D7F' stroke-width='12'/%3E%3Ccircle cx='96' cy='96' r='14' fill='%234A9D7F'/%3E%3C/svg%3E">
+<link rel="manifest" href='data:application/manifest+json,{"name":"Track","short_name":"Track","start_url":".","display":"standalone","background_color":"%230F1113","theme_color":"%230F1113","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 192 192%27%3E%3Crect width=%27192%27 height=%27192%27 rx=%2740%27 fill=%27%230F1113%27/%3E%3Ccircle cx=%2796%27 cy=%2796%27 r=%2748%27 fill=%27none%27 stroke=%27%234A9D7F%27 stroke-width=%2712%27/%3E%3Ccircle cx=%2796%27 cy=%2796%27 r=%2714%27 fill=%27%234A9D7F%27/%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"}]}'>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%230F1113'/%3E%3Ccircle cx='96' cy='96' r='48' fill='none' stroke='%234A9D7F' stroke-width='12'/%3E%3Ccircle cx='96' cy='96' r='14' fill='%234A9D7F'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0F1113; --surface:#1A1D21; --surface2:#22262b;
+    --text:#E8E6E3; --muted:#8B8F94;
+    --accent:#4A9D7F; --flag:#E0803A; --critical:#C7534B;
+    --firm:#C9A56A; --loose:#7B9E8C;
+    --radius:18px; --radius-sm:12px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:16px; line-height:1.45;
+    padding-bottom:calc(74px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:520px; margin:0 auto; padding:0 16px;}
+  h1,h2,h3{font-weight:600; margin:0;}
+  .muted{color:var(--muted);}
+  button{font-family:inherit; font-size:16px; cursor:pointer; border:none; color:inherit;}
+
+  /* Header */
+  header{padding:calc(env(safe-area-inset-top) + 14px) 16px 8px; max-width:520px; margin:0 auto;}
+  .header-row{display:flex; align-items:center; justify-content:space-between;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand .logo{width:26px;height:26px;}
+  .brand h1{font-size:20px; letter-spacing:.5px;}
+  .icon-btn{background:var(--surface); width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+
+  /* Counter */
+  .counter{
+    background:var(--surface); border-radius:var(--radius);
+    padding:16px 18px; margin-top:12px; display:flex; align-items:center; gap:16px;
+  }
+  .counter .num{font-size:40px; font-weight:700; color:var(--accent); line-height:1; min-width:52px; text-align:center;}
+  .counter .lbl{font-size:14px;}
+
+  /* Cards / sections */
+  .card{background:var(--surface); border-radius:var(--radius); padding:16px; margin-top:14px;}
+  .section-title{font-size:13px; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); margin-bottom:10px;}
+
+  /* One-tap normal */
+  .normal-btn{
+    width:100%; background:var(--accent); color:#0F1113; font-weight:700; font-size:18px;
+    padding:20px; border-radius:var(--radius); margin-top:14px; display:flex; flex-direction:column; align-items:center; gap:4px;
+    box-shadow:0 4px 18px rgba(74,157,127,.25);
+  }
+  .normal-btn small{font-weight:500; font-size:13px; opacity:.8; color:#0F1113;}
+  .normal-btn:active{transform:scale(.985);}
+  .or-divider{display:flex; align-items:center; gap:12px; color:var(--muted); font-size:13px; margin:18px 4px 4px;}
+  .or-divider::before,.or-divider::after{content:""; flex:1; height:1px; background:#2a2e33;}
+
+  /* Chips / selectors */
+  .chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    background:var(--surface2); border:1.5px solid transparent; color:var(--text);
+    padding:9px 14px; border-radius:999px; font-size:14px; transition:.12s;
+  }
+  .chip.sel{border-color:var(--accent); background:rgba(74,157,127,.16); color:var(--text);}
+  .chip.sel.warn{border-color:var(--flag); background:rgba(224,128,58,.16);}
+  .chip.sel.crit{border-color:var(--critical); background:rgba(199,83,75,.18);}
+
+  /* Bristol selector */
+  .bristol{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+  .bristol .bt{
+    display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 2px;
+    background:var(--surface2); border-radius:var(--radius-sm); border:1.5px solid transparent; transition:.12s;
+  }
+  .bristol .bt .g{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .bristol .bt .n{font-size:15px; font-weight:700;}
+  .bristol .bt.sel{border-color:var(--accent); background:rgba(74,157,127,.14);}
+  .bristol-desc{font-size:13px; color:var(--muted); margin-top:10px; min-height:18px;}
+
+  /* toggle rows */
+  .row{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:4px 0;}
+  .row + .row{border-top:1px solid #23272c; margin-top:6px; padding-top:12px;}
+  .field-lbl{font-size:15px;}
+
+  .collapse-head{display:flex; align-items:center; justify-content:space-between; width:100%; background:none; padding:4px 0; text-align:left;}
+  .collapse-head .caret{transition:transform .18s; color:var(--muted);}
+  .collapse-head.open .caret{transform:rotate(90deg);}
+  .collapse-body{display:none; margin-top:12px;}
+  .collapse-body.open{display:block;}
+
+  textarea{
+    width:100%; background:var(--surface2); border:none; border-radius:var(--radius-sm);
+    color:var(--text); padding:12px; font-family:inherit; font-size:15px; resize:vertical; min-height:60px; margin-top:8px;
+  }
+  input[type=datetime-local]{
+    background:var(--surface2); border:none; border-radius:var(--radius-sm); color:var(--text);
+    padding:10px 12px; font-family:inherit; font-size:15px; width:100%;
+  }
+
+  .primary-btn{width:100%; background:var(--accent); color:#0F1113; font-weight:700; padding:16px; border-radius:var(--radius); margin-top:16px;}
+  .ghost-btn{width:100%; background:var(--surface2); color:var(--text); padding:14px; border-radius:var(--radius); margin-top:10px;}
+
+  .note{background:rgba(224,128,58,.1); border:1px solid rgba(224,128,58,.3); color:#f0c39a; border-radius:var(--radius-sm); padding:10px 12px; font-size:13.5px; margin-top:12px; display:flex; gap:8px;}
+  .note.crit{background:rgba(199,83,75,.1); border-color:rgba(199,83,75,.35); color:#e8a49e;}
+
+  /* Nav */
+  nav{
+    position:fixed; bottom:0; left:0; right:0; background:rgba(20,22,26,.92); backdrop-filter:blur(12px);
+    border-top:1px solid #23272c; display:flex; padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    z-index:40;
+  }
+  nav button{
+    flex:1; background:none; display:flex; flex-direction:column; align-items:center; gap:3px;
+    color:var(--muted); font-size:11px; padding:8px 2px; border-radius:12px; position:relative;
+  }
+  nav button.active{color:var(--accent);}
+  nav button .badge{position:absolute; top:2px; right:calc(50% - 22px); background:var(--flag); color:#0F1113; font-size:10px; font-weight:700; min-width:16px; height:16px; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:0 4px;}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* history / flag list */
+  .entry{background:var(--surface); border-radius:var(--radius-sm); padding:12px 14px; margin-top:10px; display:flex; gap:12px; align-items:flex-start;}
+  .entry.flagged{border-left:3px solid var(--flag);}
+  .entry.crit{border-left:3px solid var(--critical);}
+  .entry .e-icon{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--surface2);font-weight:700;}
+  .entry .e-body{flex:1; min-width:0;}
+  .entry .e-time{font-size:13px; color:var(--muted);}
+  .entry .e-tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
+  .tag{font-size:11.5px; padding:3px 8px; border-radius:999px; background:var(--surface2); color:var(--muted);}
+  .tag.warn{background:rgba(224,128,58,.16); color:var(--flag);}
+  .tag.crit{background:rgba(199,83,75,.18); color:#e8918a;}
+  .del-x{background:none; color:var(--muted); font-size:18px; padding:2px 6px; align-self:center;}
+
+  .day-group{margin-top:18px;}
+  .day-head{font-size:13px; color:var(--muted); font-weight:600; display:flex; justify-content:space-between; padding:0 4px;}
+  .gap-marker{text-align:center; color:#5a5e63; font-size:12px; padding:10px; font-style:italic;}
+
+  /* summary */
+  .stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px;}
+  .stat{background:var(--surface2); border-radius:var(--radius-sm); padding:12px 14px;}
+  .stat .v{font-size:24px; font-weight:700;}
+  .stat .k{font-size:12px; color:var(--muted); margin-top:2px;}
+  .range-tabs{display:flex; gap:6px; background:var(--surface2); padding:4px; border-radius:999px;}
+  .range-tabs button{flex:1; background:none; color:var(--muted); padding:8px; border-radius:999px; font-size:14px;}
+  .range-tabs button.active{background:var(--accent); color:#0F1113; font-weight:700;}
+  .bardist{margin-top:8px;}
+  .bardist .br{display:flex; align-items:center; gap:10px; margin-top:7px; font-size:13px;}
+  .bardist .br .bl{width:44px; color:var(--muted); flex-shrink:0;}
+  .bardist .br .track{flex:1; height:16px; background:var(--surface2); border-radius:8px; overflow:hidden;}
+  .bardist .br .fill{height:100%; border-radius:8px;}
+  .bardist .br .ct{width:26px; text-align:right; color:var(--muted); flex-shrink:0;}
+
+  /* modal / onboarding */
+  .overlay{position:fixed; inset:0; background:rgba(8,9,11,.72); backdrop-filter:blur(4px); z-index:60; display:none; align-items:center; justify-content:center; padding:20px;}
+  .overlay.show{display:flex;}
+  .modal{background:var(--surface); border-radius:22px; padding:24px; max-width:440px; width:100%; max-height:88vh; overflow-y:auto;}
+  .modal h2{font-size:20px; margin-bottom:6px;}
+  .modal p{color:var(--muted); font-size:14.5px;}
+  .bristol-legend{margin:14px 0;}
+  .bristol-legend .li{display:flex; align-items:center; gap:12px; padding:7px 0; font-size:14px;}
+  .bristol-legend .li .g{width:30px;height:22px;border-radius:6px;flex-shrink:0;}
+
+  .disclaimer{text-align:center; color:#5a5e63; font-size:12px; padding:20px 10px 4px; line-height:1.5;}
+  .toast{position:fixed; bottom:calc(84px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%) translateY(20px); background:var(--accent); color:#0F1113; font-weight:600; padding:12px 20px; border-radius:999px; opacity:0; pointer-events:none; transition:.25s; z-index:70; box-shadow:0 6px 20px rgba(0,0,0,.4);}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .empty{text-align:center; color:var(--muted); padding:40px 20px; font-size:14.5px;}
+  .link-btn{background:none; color:var(--accent); font-size:14px; padding:6px; text-decoration:underline;}
+  .danger{color:var(--critical);}
+  @media print{
+    nav,header .icon-btn,.no-print{display:none!important;}
+    body{padding:0; background:#fff; color:#000;}
+    .card,.stat,.surface{background:#f4f4f4!important; color:#000!important;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 192 192"><circle cx="96" cy="96" r="60" fill="none" stroke="#4A9D7F" stroke-width="14"/><circle cx="96" cy="96" r="18" fill="#4A9D7F"/></svg>
+      <h1>Track</h1>
+    </div>
+    <button class="icon-btn no-print" onclick="openSettings()" aria-label="Settings">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8B8F94" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- ============ LOG VIEW ============ -->
+  <section class="view active" id="view-log">
+    <div class="counter">
+      <div class="num" id="dayCount">0</div>
+      <div>
+        <div style="font-weight:600">Today</div>
+        <div class="lbl muted" id="dayLabel">movements logged</div>
+      </div>
+    </div>
+
+    <button class="normal-btn" onclick="logNormal()">
+      Log a normal one
+      <small>Type 4 · normal color · no symptoms</small>
+    </button>
+
+    <div class="or-divider">or add detail</div>
+
+    <!-- Bristol -->
+    <div class="card">
+      <div class="section-title">Consistency (Bristol scale)</div>
+      <div class="bristol" id="bristolSel"></div>
+      <div class="bristol-desc" id="bristolDesc">Tap a type — or leave blank for “not sure.”</div>
+    </div>
+
+    <!-- Color -->
+    <div class="card">
+      <div class="section-title">Color</div>
+      <div class="chips" id="colorSel"></div>
+      <div id="colorNote"></div>
+    </div>
+
+    <!-- Urgency -->
+    <div class="card">
+      <div class="section-title">Urgency</div>
+      <div class="chips" id="urgencySel"></div>
+      <div class="row" id="madeItRow" style="display:none; margin-top:12px">
+        <span class="field-lbl">Could you make it in time?</span>
+        <div class="chips">
+          <button class="chip" data-made="yes" onclick="setMade('yes')">Yes</button>
+          <button class="chip" data-made="no" onclick="setMade('no')">No</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pain -->
+    <div class="card">
+      <div class="row">
+        <span class="field-lbl">Pain or straining</span>
+        <div class="chips">
+          <button class="chip" data-pain="no" onclick="setPain('no')">No</button>
+          <button class="chip" data-pain="yes" onclick="setPain('yes')">Yes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blood / Mucus -->
+    <div class="card">
+      <div class="section-title">Blood</div>
+      <div class="chips" id="bloodSel"></div>
+      <div class="section-title" style="margin-top:16px">Mucus (visible slime / jelly coating)</div>
+      <div class="chips" id="mucusSel"></div>
+      <div id="bloodNote"></div>
+    </div>
+
+    <!-- More detail collapse -->
+    <div class="card">
+      <button class="collapse-head" id="moreHead" onclick="toggleCollapse('moreHead','moreBody')">
+        <span class="field-lbl">Anything unusual today?</span>
+        <span class="caret">›</span>
+      </button>
+      <div class="collapse-body" id="moreBody">
+        <div class="chips" id="contextSel"></div>
+        <div class="section-title" style="margin-top:16px">Smell (optional)</div>
+        <div class="chips" id="smellSel"></div>
+        <div id="smellNote"></div>
+        <div class="section-title" style="margin-top:16px">When</div>
+        <input type="datetime-local" id="entryTime">
+        <div class="section-title" style="margin-top:16px">Note</div>
+        <textarea id="entryNote" placeholder="Optional — anything you'd want to remember."></textarea>
+      </div>
+    </div>
+
+    <button class="primary-btn" onclick="logDetailed()">Log this entry</button>
+    <button class="ghost-btn" onclick="resetForm(true)">Clear form</button>
+
+    <div class="disclaimer">Track is a logging aid to help you and your doctor spot patterns. It is not medical advice or a diagnosis.</div>
+  </section>
+
+  <!-- ============ FLAGS VIEW ============ -->
+  <section class="view" id="view-flags">
+    <h2 style="margin:8px 4px 4px; font-size:19px">Flags for review</h2>
+    <p class="muted" style="margin:0 4px 8px; font-size:14px">Entries worth mentioning at your appointment.</p>
+    <button class="ghost-btn no-print" style="margin-top:6px" onclick="window.print()">Print / save these</button>
+    <div id="flagsList"></div>
+  </section>
+
+  <!-- ============ SUMMARY VIEW ============ -->
+  <section class="view" id="view-summary">
+    <h2 style="margin:8px 4px 12px; font-size:19px">Summary</h2>
+    <div class="range-tabs" id="rangeTabs">
+      <button data-r="7" class="active" onclick="setRange(7)">7 days</button>
+      <button data-r="30" onclick="setRange(30)">30 days</button>
+      <button data-r="90" onclick="setRange(90)">90 days</button>
+    </div>
+    <div id="summaryBody"></div>
+    <button class="ghost-btn no-print" onclick="window.print()">Print one-page summary</button>
+  </section>
+
+  <!-- ============ HISTORY VIEW ============ -->
+  <section class="view" id="view-history">
+    <h2 style="margin:8px 4px 4px; font-size:19px">History</h2>
+    <p class="muted" style="margin:0 4px 8px; font-size:14px">Your full log. Gaps are shown too — a missed day is data.</p>
+    <div id="historyList"></div>
+  </section>
+
+</div>
+
+<!-- ============ NAV ============ -->
+<nav>
+  <button class="active" data-view="log" onclick="showView('log')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+    Log
+  </button>
+  <button data-view="flags" onclick="showView('flags')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+    Flags<span class="badge" id="flagBadge" style="display:none">0</span>
+  </button>
+  <button data-view="summary" onclick="showView('summary')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="4" width="3" height="14"/></svg>
+    Summary
+  </button>
+  <button data-view="history" onclick="showView('history')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 3"/></svg>
+    History
+  </button>
+</nav>
+
+<!-- ============ ONBOARDING ============ -->
+<div class="overlay" id="onboarding">
+  <div class="modal">
+    <h2>Welcome to Track</h2>
+    <p>A quick, private way to log bowel movements so you have real data for your gastro appointment.</p>
+    <div class="bristol-legend" id="onboardLegend"></div>
+    <p style="font-size:13px">Most days, one tap on <b style="color:var(--accent)">“Log a normal one”</b> is all you need. Detail is there when something’s off.</p>
+    <button class="primary-btn" onclick="finishOnboarding()">Got it</button>
+  </div>
+</div>
+
+<!-- ============ SETTINGS ============ -->
+<div class="overlay" id="settings">
+  <div class="modal">
+    <h2>Settings & data</h2>
+    <p>Your data lives only on this device. Export a backup or a file to hand your doctor.</p>
+    <button class="ghost-btn" onclick="exportData()">Export data (JSON)</button>
+    <button class="ghost-btn" onclick="document.getElementById('importFile').click()">Import data (JSON)</button>
+    <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(event)">
+    <button class="ghost-btn" onclick="showOnboarding()">Show intro again</button>
+    <button class="ghost-btn danger" onclick="wipeData()">Delete everything</button>
+    <button class="link-btn" style="display:block;margin:14px auto 0" onclick="closeSettings()">Close</button>
+    <div class="disclaimer" style="padding-top:14px">Track is a tracking aid, not medical advice.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- constants ---------- */
+const K = 'ac_track_';
+const KEYS = { entries:K+'entries', onboarded:K+'onboarded' };
+
+const BRISTOL = [
+  {t:1, d:'Separate hard lumps, like nuts', kind:'firm'},
+  {t:2, d:'Sausage-shaped but lumpy', kind:'firm'},
+  {t:3, d:'Sausage with cracks on surface', kind:'ok'},
+  {t:4, d:'Smooth, soft sausage or snake — ideal', kind:'ok'},
+  {t:5, d:'Soft blobs with clear-cut edges', kind:'ok'},
+  {t:6, d:'Fluffy, mushy, ragged edges', kind:'loose'},
+  {t:7, d:'Watery, no solid pieces — liquid', kind:'loose'},
+];
+const COLORS = [
+  {id:'brown', label:'Normal brown', hex:'#8a5a2b'},
+  {id:'green', label:'Green', hex:'#5c7d3a'},
+  {id:'yellow', label:'Yellow', hex:'#c9a84a'},
+  {id:'black', label:'Black / tarry', hex:'#2b2b2b', crit:true},
+  {id:'red', label:'Red / bloody', hex:'#9d3b34', crit:true},
+  {id:'pale', label:'Pale / clay', hex:'#cbbfa5', flag:true},
+];
+const URGENCY = [{id:'none',label:'None'},{id:'mild',label:'Mild'},{id:'severe',label:'Severe',warn:true}];
+const BLOOD = [{id:'notsure',label:"Not sure / didn't notice"},{id:'maybe',label:'Think I saw some',warn:true},{id:'yes',label:'Definitely present',crit:true}];
+const MUCUS = [{id:'notsure',label:'Not sure'},{id:'no',label:'None'},{id:'yes',label:'Present',warn:true}];
+const SMELL = [{id:'normal',label:'Normal'},{id:'foul',label:'Unusually foul'},{id:'metallic',label:'Metallic'},{id:'sweet',label:'Sweet'},{id:'sour',label:'Sour'}];
+const CONTEXT = ['New food','Travel','Stress','New medication','Period','Illness'];
+
+/* gradient helper firm->loose */
+function bristolColor(t){
+  const firm=[201,165,106], loose=[123,158,140];
+  const r=(t-1)/6;
+  const mix=firm.map((c,i)=>Math.round(c+(loose[i]-c)*r));
+  return `rgb(${mix.join(',')})`;
+}
+
+/* ---------- state ---------- */
+let form = {};
+function blankForm(){ return {bristol:null,color:null,urgency:'none',made:null,pain:'no',blood:'notsure',mucus:'notsure',smell:null,context:[],note:'',time:null}; }
+
+/* ---------- storage ---------- */
+function loadEntries(){ try{return JSON.parse(localStorage.getItem(KEYS.entries))||[];}catch(e){return [];} }
+function saveEntries(a){ localStorage.setItem(KEYS.entries, JSON.stringify(a)); }
+let entries = loadEntries();
+
+/* ---------- flag logic ---------- */
+function computeFlag(e){
+  const reasons=[]; let crit=false;
+  if(e.bristol===1||e.bristol===2) reasons.push({t:'Constipation (type '+e.bristol+')',lvl:'warn'});
+  if(e.bristol===6||e.bristol===7) reasons.push({t:'Diarrhea (type '+e.bristol+')',lvl:'warn'});
+  if(e.color==='black'){reasons.push({t:'Black/tarry color',lvl:'crit'});crit=true;}
+  if(e.color==='red'){reasons.push({t:'Red/bloody color',lvl:'crit'});crit=true;}
+  if(e.color==='pale') reasons.push({t:'Pale/clay color',lvl:'warn'});
+  if(e.blood==='yes'){reasons.push({t:'Blood: definitely present',lvl:'crit'});crit=true;}
+  else if(e.blood==='maybe') reasons.push({t:'Possible blood noted',lvl:'warn'});
+  if(e.mucus==='yes') reasons.push({t:'Mucus present',lvl:'warn'});
+  if(e.urgency==='severe') reasons.push({t:'Severe urgency',lvl:'warn'});
+  if(e.pain==='yes') reasons.push({t:'Pain / straining',lvl:'warn'});
+  return {flagged:reasons.length>0, crit, reasons};
+}
+/* secondary (supporting, non-flagging) observations */
+function secondaryObs(e){
+  const o=[];
+  if(e.smell==='foul') o.push('Unusually foul smell');
+  if(e.smell==='metallic') o.push('Metallic smell');
+  if(e.smell==='sweet') o.push('Sweet smell');
+  if(e.smell==='sour') o.push('Sour smell');
+  return o;
+}
+
+/* ---------- render form controls ---------- */
+function buildForm(){
+  // bristol
+  const bs=document.getElementById('bristolSel'); bs.innerHTML='';
+  BRISTOL.forEach(b=>{
+    const el=document.createElement('button'); el.className='bt'; el.dataset.t=b.t;
+    el.innerHTML=`<span class="g" style="background:${bristolColor(b.t)}"></span><span class="n">${b.t}</span>`;
+    el.onclick=()=>{ form.bristol=(form.bristol===b.t?null:b.t); syncForm(); };
+    bs.appendChild(el);
+  });
+  // colors
+  const cs=document.getElementById('colorSel'); cs.innerHTML='';
+  COLORS.forEach(c=>{
+    const el=document.createElement('button'); el.className='chip'; el.dataset.c=c.id;
+    el.innerHTML=`<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${c.hex};margin-right:7px;vertical-align:-1px;border:1px solid rgba(255,255,255,.15)"></span>${c.label}`;
+    el.onclick=()=>{ form.color=(form.color===c.id?null:c.id); syncForm(); };
+    cs.appendChild(el);
+  });
+  // urgency
+  const us=document.getElementById('urgencySel'); us.innerHTML='';
+  URGENCY.forEach(u=>{ const el=document.createElement('button'); el.className='chip'; el.dataset.u=u.id; el.textContent=u.label; el.onclick=()=>{form.urgency=u.id; if(u.id!=='severe')form.made=null; syncForm();}; us.appendChild(el); });
+  // blood
+  const bl=document.getElementById('bloodSel'); bl.innerHTML='';
+  BLOOD.forEach(b=>{ const el=document.createElement('button'); el.className='chip'; el.dataset.b=b.id; el.textContent=b.label; el.onclick=()=>{form.blood=b.id; syncForm();}; bl.appendChild(el); });
+  // mucus
+  const mu=document.getElementById('mucusSel'); mu.innerHTML='';
+  MUCUS.forEach(m=>{ const el=document.createElement('button'); el.className='chip'; el.dataset.m=m.id; el.textContent=m.label; el.onclick=()=>{form.mucus=m.id; syncForm();}; mu.appendChild(el); });
+  // smell
+  const sm=document.getElementById('smellSel'); sm.innerHTML='';
+  SMELL.forEach(s=>{ const el=document.createElement('button'); el.className='chip'; el.dataset.s=s.id; el.textContent=s.label; el.onclick=()=>{form.smell=(form.smell===s.id?null:s.id); syncForm();}; sm.appendChild(el); });
+  // context
+  const ct=document.getElementById('contextSel'); ct.innerHTML='';
+  CONTEXT.forEach(c=>{ const el=document.createElement('button'); el.className='chip'; el.dataset.ctx=c; el.textContent=c; el.onclick=()=>{ const i=form.context.indexOf(c); if(i>=0)form.context.splice(i,1); else form.context.push(c); syncForm(); }; ct.appendChild(el); });
+}
+
+function syncForm(){
+  // bristol
+  document.querySelectorAll('#bristolSel .bt').forEach(el=>el.classList.toggle('sel', +el.dataset.t===form.bristol));
+  const bd=document.getElementById('bristolDesc');
+  if(form.bristol){ const b=BRISTOL.find(x=>x.t===form.bristol); bd.textContent=`Type ${b.t}: ${b.d}`; }
+  else bd.textContent='Tap a type — or leave blank for “not sure.”';
+  // colors
+  document.querySelectorAll('#colorSel .chip').forEach(el=>{ const c=COLORS.find(x=>x.id===el.dataset.c); el.classList.toggle('sel', form.color===el.dataset.c); el.classList.toggle('crit', form.color===el.dataset.c && c.crit); el.classList.toggle('warn', form.color===el.dataset.c && c.flag); });
+  const cn=document.getElementById('colorNote'); cn.innerHTML='';
+  if(form.color==='black'||form.color==='red') cn.innerHTML='<div class="note crit">⚠ Dark or red coloring can indicate blood — worth mentioning to your doctor.</div>';
+  else if(form.color==='pale') cn.innerHTML='<div class="note">Pale/clay stool is worth noting for your doctor.</div>';
+  // urgency
+  document.querySelectorAll('#urgencySel .chip').forEach(el=>{ const u=URGENCY.find(x=>x.id===el.dataset.u); el.classList.toggle('sel', form.urgency===el.dataset.u); el.classList.toggle('warn', form.urgency===el.dataset.u && u.warn); });
+  document.getElementById('madeItRow').style.display = form.urgency==='severe'?'flex':'none';
+  document.querySelectorAll('#madeItRow .chip').forEach(el=>el.classList.toggle('sel', form.made===el.dataset.made));
+  // pain
+  document.querySelectorAll('[data-pain]').forEach(el=>{ el.classList.toggle('sel', form.pain===el.dataset.pain); el.classList.toggle('warn', form.pain==='yes' && el.dataset.pain==='yes'); });
+  // blood
+  document.querySelectorAll('#bloodSel .chip').forEach(el=>{ const b=BLOOD.find(x=>x.id===el.dataset.b); el.classList.toggle('sel', form.blood===el.dataset.b); el.classList.toggle('crit', form.blood===el.dataset.b&&b.crit); el.classList.toggle('warn', form.blood===el.dataset.b&&b.warn); });
+  // mucus
+  document.querySelectorAll('#mucusSel .chip').forEach(el=>{ const m=MUCUS.find(x=>x.id===el.dataset.m); el.classList.toggle('sel', form.mucus===el.dataset.m); el.classList.toggle('warn', form.mucus===el.dataset.m&&m.warn); });
+  // blood combined note
+  const bn=document.getElementById('bloodNote'); bn.innerHTML='';
+  if(form.blood==='yes'||form.color==='black'||form.color==='red'){ bn.innerHTML='<div class="note crit">This entry will be flagged for review. If bleeding is heavy or you feel unwell, contact a doctor.</div>'; }
+  else if(form.blood==='maybe'||form.mucus==='yes'){ bn.innerHTML='<div class="note">Noted as a possible observation — it’ll appear in your review list.</div>'; }
+  // smell
+  document.querySelectorAll('#smellSel .chip').forEach(el=>el.classList.toggle('sel', form.smell===el.dataset.s));
+  const sn=document.getElementById('smellNote'); sn.innerHTML='';
+  if(form.smell==='foul'||form.smell==='metallic') sn.innerHTML='<div class="note">Added as a secondary observation (context only — not a flag on its own).</div>';
+  // context
+  document.querySelectorAll('#contextSel .chip').forEach(el=>el.classList.toggle('sel', form.context.includes(el.dataset.ctx)));
+}
+
+/* ---------- logging ---------- */
+function nowISO(){ return new Date().toISOString(); }
+function logNormal(){
+  const e={ id:Date.now()+''+Math.random().toString(36).slice(2,6), ts:nowISO(), bristol:4, color:'brown', urgency:'none', made:null, pain:'no', blood:'notsure', mucus:'notsure', smell:null, context:[], note:'', quick:true };
+  entries.push(e); saveEntries(entries); refreshAll(); toast('Logged — nothing remarkable ✓');
+}
+function logDetailed(){
+  let ts=nowISO();
+  const tv=document.getElementById('entryTime').value;
+  if(tv){ const d=new Date(tv); if(!isNaN(d)) ts=d.toISOString(); }
+  const e={ id:Date.now()+''+Math.random().toString(36).slice(2,6), ts, bristol:form.bristol, color:form.color, urgency:form.urgency, made:form.made, pain:form.pain, blood:form.blood, mucus:form.mucus, smell:form.smell, context:form.context.slice(), note:document.getElementById('entryNote').value.trim(), quick:false };
+  entries.push(e); saveEntries(entries); refreshAll(); resetForm();
+  const f=computeFlag(e);
+  toast(f.flagged? 'Logged & flagged for review' : 'Entry logged ✓');
+}
+function resetForm(clearedByUser){
+  form=blankForm(); document.getElementById('entryNote').value=''; document.getElementById('entryTime').value=''; syncForm();
+  const mb=document.getElementById('moreBody'), mh=document.getElementById('moreHead');
+  mb.classList.remove('open'); mh.classList.remove('open');
+  if(clearedByUser) toast('Form cleared');
+}
+function setPain(v){ form.pain=v; syncForm(); }
+function setMade(v){ form.made=v; syncForm(); }
+
+/* ---------- daily counter ---------- */
+function sameDay(iso,ref){ const d=new Date(iso),r=ref||new Date(); return d.getFullYear()===r.getFullYear()&&d.getMonth()===r.getMonth()&&d.getDate()===r.getDate(); }
+function refreshCounter(){
+  const n=entries.filter(e=>sameDay(e.ts)).length;
+  document.getElementById('dayCount').textContent=n;
+  document.getElementById('dayLabel').textContent = n===1?'movement logged':'movements logged';
+}
+
+/* ---------- flags view ---------- */
+function refreshFlags(){
+  const flagged=entries.map(e=>({e,f:computeFlag(e)})).filter(x=>x.f.flagged).sort((a,b)=>new Date(b.e.ts)-new Date(a.e.ts));
+  const badge=document.getElementById('flagBadge');
+  if(flagged.length){ badge.style.display='flex'; badge.textContent=flagged.length; } else badge.style.display='none';
+  const list=document.getElementById('flagsList'); list.innerHTML='';
+  if(!flagged.length){ list.innerHTML='<div class="empty">No flagged entries. When something looks off, it’ll be collected here for your appointment.</div>'; return; }
+  flagged.forEach(({e,f})=>list.appendChild(entryEl(e,f,true)));
+}
+
+function entryEl(e,f,showReasons){
+  const div=document.createElement('div'); div.className='entry'+(f.flagged?(f.crit?' crit':' flagged'):'');
+  const d=new Date(e.ts);
+  const bColor = e.bristol?bristolColor(e.bristol):'var(--surface2)';
+  const icon = e.bristol? e.bristol : '·';
+  let tags='';
+  const secs=secondaryObs(e);
+  if(showReasons && f.reasons){ f.reasons.forEach(r=>tags+=`<span class="tag ${r.lvl==='crit'?'crit':'warn'}">${r.t}</span>`); }
+  else {
+    if(e.bristol) tags+=`<span class="tag">Type ${e.bristol}</span>`;
+    if(e.color && e.color!=='brown') tags+=`<span class="tag ${['black','red'].includes(e.color)?'crit':'warn'}">${COLORS.find(c=>c.id===e.color).label}</span>`;
+    if(f.flagged) tags+=`<span class="tag warn">Flagged</span>`;
+  }
+  secs.forEach(s=>tags+=`<span class="tag">${s}</span>`);
+  (e.context||[]).forEach(c=>tags+=`<span class="tag">${c}</span>`);
+  const timeStr = d.toLocaleString([], {weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+  div.innerHTML=`<div class="e-icon" style="background:${e.bristol?bColor:'var(--surface2)'};color:${e.bristol?'#0F1113':'var(--muted)'}">${icon}</div>
+    <div class="e-body"><div class="e-time">${timeStr}${e.quick?' · quick log':''}</div>
+    <div class="e-tags">${tags||'<span class="tag">Unremarkable</span>'}</div>
+    ${e.note?`<div style="font-size:13.5px;color:var(--muted);margin-top:6px">${escapeHtml(e.note)}</div>`:''}</div>
+    <button class="del-x no-print" title="Delete" onclick="deleteEntry('${e.id}')">×</button>`;
+  return div;
+}
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---------- history view ---------- */
+function refreshHistory(){
+  const list=document.getElementById('historyList'); list.innerHTML='';
+  if(!entries.length){ list.innerHTML='<div class="empty">No entries yet. Start with “Log a normal one” on the Log tab.</div>'; return; }
+  const sorted=[...entries].sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  // group by day, walk from most recent day back to earliest, inserting gap markers
+  const byDay={};
+  sorted.forEach(e=>{ const k=dayKey(e.ts); (byDay[k]=byDay[k]||[]).push(e); });
+  const first=new Date(sorted[sorted.length-1].ts); first.setHours(0,0,0,0);
+  const today=new Date(); today.setHours(0,0,0,0);
+  for(let d=new Date(today); d>=first; d.setDate(d.getDate()-1)){
+    const k=dayKey(d.toISOString());
+    if(byDay[k]){
+      const grp=document.createElement('div'); grp.className='day-group';
+      const head=document.createElement('div'); head.className='day-head';
+      head.innerHTML=`<span>${dayLabelFor(d)}</span><span>${byDay[k].length} logged</span>`;
+      grp.appendChild(head);
+      byDay[k].forEach(e=>grp.appendChild(entryEl(e,computeFlag(e),false)));
+      list.appendChild(grp);
+    } else {
+      const gm=document.createElement('div'); gm.className='gap-marker'; gm.textContent='— no entries logged '+dayLabelFor(d)+' —';
+      list.appendChild(gm);
+    }
+  }
+}
+function dayKey(iso){ const d=new Date(iso); return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate(); }
+function dayLabelFor(d){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const dd=new Date(d); dd.setHours(0,0,0,0);
+  const diff=Math.round((today-dd)/86400000);
+  if(diff===0) return 'Today';
+  if(diff===1) return 'Yesterday';
+  return dd.toLocaleDateString([], {weekday:'long', month:'short', day:'numeric'});
+}
+function deleteEntry(id){
+  if(!confirm('Delete this entry?')) return;
+  entries=entries.filter(e=>e.id!==id); saveEntries(entries); refreshAll(); toast('Entry deleted');
+}
+
+/* ---------- summary view ---------- */
+let curRange=7;
+function setRange(r){ curRange=r; document.querySelectorAll('#rangeTabs button').forEach(b=>b.classList.toggle('active',+b.dataset.r===r)); refreshSummary(); }
+function refreshSummary(){
+  const body=document.getElementById('summaryBody');
+  const cut=new Date(); cut.setDate(cut.getDate()-curRange); cut.setHours(0,0,0,0);
+  const inRange=entries.filter(e=>new Date(e.ts)>=cut);
+  if(!inRange.length){ body.innerHTML='<div class="empty">No entries in the last '+curRange+' days.</div>'; return; }
+  const days=curRange;
+  const avg=(inRange.length/days).toFixed(1);
+  const flags=inRange.filter(e=>computeFlag(e).flagged);
+  const flagPct=Math.round(flags.length/inRange.length*100);
+  const bloodCt=inRange.filter(e=>e.blood==='yes'||e.blood==='maybe'||e.color==='black'||e.color==='red').length;
+  const mucusCt=inRange.filter(e=>e.mucus==='yes').length;
+  // bristol distribution
+  const dist={}; for(let i=1;i<=7;i++)dist[i]=0; let known=0;
+  inRange.forEach(e=>{ if(e.bristol){dist[e.bristol]++;known++;} });
+  // time of day
+  const buckets={'Early (12–6am)':0,'Morning (6–9am)':0,'Late AM (9–12)':0,'Afternoon (12–5pm)':0,'Evening (5–9pm)':0,'Night (9–12am)':0};
+  inRange.forEach(e=>{ const h=new Date(e.ts).getHours();
+    if(h<6)buckets['Early (12–6am)']++; else if(h<9)buckets['Morning (6–9am)']++; else if(h<12)buckets['Late AM (9–12)']++;
+    else if(h<17)buckets['Afternoon (12–5pm)']++; else if(h<21)buckets['Evening (5–9pm)']++; else buckets['Night (9–12am)']++; });
+  const peak=Object.entries(buckets).sort((a,b)=>b[1]-a[1])[0];
+  // secondary smells
+  const smells={}; inRange.forEach(e=>secondaryObs(e).forEach(s=>smells[s]=(smells[s]||0)+1));
+  // trend: compare first half vs second half avg frequency
+  const half=new Date(); half.setDate(half.getDate()-curRange/2);
+  const recent=inRange.filter(e=>new Date(e.ts)>=half).length, older=inRange.length-recent;
+  let trend='steady', tcolor='var(--muted)';
+  if(recent>older*1.3){ trend='more frequent lately'; tcolor='var(--flag)'; }
+  else if(recent<older*0.7){ trend='less frequent lately'; tcolor='var(--flag)'; }
+
+  let html=`<div class="stat-grid" style="margin-top:14px">
+    <div class="stat"><div class="v">${avg}</div><div class="k">avg per day</div></div>
+    <div class="stat"><div class="v">${inRange.length}</div><div class="k">total entries</div></div>
+    <div class="stat"><div class="v" style="color:${flags.length?'var(--flag)':'var(--accent)'}">${flags.length}</div><div class="k">flagged (${flagPct}%)</div></div>
+    <div class="stat"><div class="v" style="color:${bloodCt?'var(--critical)':'var(--text)'}">${bloodCt}</div><div class="k">blood observations</div></div>
+  </div>`;
+
+  html+=`<div class="card"><div class="section-title">Bristol distribution</div><div class="bardist">`;
+  const maxd=Math.max(1,...Object.values(dist));
+  for(let i=1;i<=7;i++){ const w=Math.round(dist[i]/maxd*100); html+=`<div class="br"><span class="bl">Type ${i}</span><div class="track"><div class="fill" style="width:${w}%;background:${bristolColor(i)}"></div></div><span class="ct">${dist[i]}</span></div>`; }
+  html+=`</div>${known<inRange.length?`<div class="muted" style="font-size:12px;margin-top:8px">${inRange.length-known} entr${inRange.length-known===1?'y':'ies'} with no type recorded</div>`:''}</div>`;
+
+  html+=`<div class="card"><div class="section-title">Time-of-day pattern</div>
+    <div style="font-size:15px">Most movements: <b style="color:var(--accent)">${peak[1]?peak[0]:'—'}</b></div>
+    <div class="bardist" style="margin-top:10px">`;
+  const maxb=Math.max(1,...Object.values(buckets));
+  Object.entries(buckets).forEach(([k,v])=>{ if(v>0){ const w=Math.round(v/maxb*100); html+=`<div class="br"><span class="bl" style="width:auto;min-width:90px;font-size:12px">${k.split(' (')[0]}</span><div class="track"><div class="fill" style="width:${w}%;background:var(--loose)"></div></div><span class="ct">${v}</span></div>`; } });
+  html+=`</div></div>`;
+
+  html+=`<div class="card"><div class="section-title">Observations</div>
+    <div class="row"><span class="field-lbl">Blood noted</span><span class="muted">${bloodCt} time${bloodCt===1?'':'s'}</span></div>
+    <div class="row"><span class="field-lbl">Mucus noted</span><span class="muted">${mucusCt} time${mucusCt===1?'':'s'}</span></div>
+    <div class="row"><span class="field-lbl">Trend</span><span style="color:${tcolor}">${trend}</span></div>`;
+  const smKeys=Object.keys(smells);
+  if(smKeys.length){ html+=`<div class="row"><span class="field-lbl">Secondary smell notes</span><span class="muted" style="text-align:right">${smKeys.map(s=>s.replace(' smell','')+' ×'+smells[s]).join(', ')}</span></div>`; }
+  html+=`</div>`;
+
+  html+=`<div class="disclaimer">Summary of ${inRange.length} entries over ${curRange} days. Bring this to your appointment — it’s a starting point for discussion, not a diagnosis.</div>`;
+  body.innerHTML=html;
+}
+
+/* ---------- views ---------- */
+function showView(v){
+  document.querySelectorAll('.view').forEach(s=>s.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
+  if(v==='summary') refreshSummary();
+  if(v==='history') refreshHistory();
+  if(v==='flags') refreshFlags();
+  window.scrollTo(0,0);
+}
+function refreshAll(){ refreshCounter(); refreshFlags(); }
+
+/* ---------- onboarding & settings ---------- */
+function buildOnboardLegend(){
+  const el=document.getElementById('onboardLegend'); el.innerHTML='';
+  [[1,'Hard lumps — constipation'],[4,'Smooth & soft — ideal'],[7,'Watery — diarrhea']].forEach(([t,txt])=>{
+    const li=document.createElement('div'); li.className='li';
+    li.innerHTML=`<span class="g" style="background:${bristolColor(t)}"></span><span><b>Type ${t}.</b> ${txt}</span>`;
+    el.appendChild(li);
+  });
+}
+function showOnboarding(){ closeSettings(); document.getElementById('onboarding').classList.add('show'); }
+function finishOnboarding(){ localStorage.setItem(KEYS.onboarded,'1'); document.getElementById('onboarding').classList.remove('show'); }
+function openSettings(){ document.getElementById('settings').classList.add('show'); }
+function closeSettings(){ document.getElementById('settings').classList.remove('show'); }
+
+function exportData(){
+  const data={ app:'Track', version:1, exported:nowISO(), entries };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download='track-export-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  URL.revokeObjectURL(url); toast('Exported ✓');
+}
+function importData(ev){
+  const file=ev.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{
+    const data=JSON.parse(r.result);
+    const incoming=Array.isArray(data)?data:data.entries;
+    if(!Array.isArray(incoming)) throw new Error('bad');
+    const ids=new Set(entries.map(e=>e.id));
+    let added=0;
+    incoming.forEach(e=>{ if(e&&e.id&&!ids.has(e.id)){ entries.push(e); added++; } });
+    saveEntries(entries); refreshAll(); closeSettings();
+    toast(added+' entr'+(added===1?'y':'ies')+' imported');
+  }catch(e){ toast('Could not read that file'); } };
+  r.readAsText(file); ev.target.value='';
+}
+function wipeData(){
+  if(!confirm('Delete ALL entries permanently? This cannot be undone.')) return;
+  if(!confirm('Really delete everything? Consider exporting a backup first.')) return;
+  entries=[]; saveEntries(entries); refreshAll(); refreshHistory(); refreshSummary(); closeSettings(); toast('All data deleted');
+}
+
+/* ---------- toast ---------- */
+let toastT;
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200); }
+
+/* ---------- collapse ---------- */
+function toggleCollapse(headId,bodyId){ document.getElementById(headId).classList.toggle('open'); document.getElementById(bodyId).classList.toggle('open'); }
+
+/* ---------- init ---------- */
+form=blankForm();
+buildForm(); syncForm(); buildOnboardLegend(); refreshAll();
+if(!localStorage.getItem(KEYS.onboarded)) document.getElementById('onboarding').classList.add('show');
+
+/* ---------- service worker (offline) ---------- */
+if('serviceWorker' in navigator){
+  const swCode=`self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))});`;
+  const blob=new Blob([swCode],{type:'text/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+}
+</script>
+</body>
+</html>

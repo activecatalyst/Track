@@ -6,7 +6,7 @@ A small, private web app for logging bowel movements so you have real data to br
 
 ## What it does
 
-The whole app is a single file (`track.html`). Open it in a browser and it works. Everything you log stays on your own device — nothing is uploaded anywhere.
+The whole app is a single file (`index.html`). Open it in a browser and it works. Everything you log stays on your own device — nothing is uploaded anywhere.
 
 - **One-tap logging.** If everything was unremarkable, one tap on "Log a normal one" records a normal entry and bumps today's count. This is the main way to use it.
 - **Detail when you need it.** Bristol stool type (1–7), color, urgency, pain, blood, mucus, smell, and an optional context/note field — every symptom field defaults to "normal / not sure," so adding detail is opt-in.
@@ -17,12 +17,12 @@ The whole app is a single file (`track.html`). Open it in a browser and it works
 ## Getting started
 
 ### Just open it
-Double-click `track.html`, or drag it into any modern browser (Chrome, Safari, Firefox, Edge). That's it — no install, no account, no internet needed after the first load.
+Double-click `index.html`, or drag it into any modern browser (Chrome, Safari, Firefox, Edge). That's it — no install, no account, no internet needed after the first load.
 
 ### Install it on your phone (optional)
 It's a Progressive Web App, so you can add it to your home screen and it opens like a native app, fully offline.
 
-1. Host `track.html` somewhere with HTTPS — [GitHub Pages](https://pages.github.com) is free and works well. (Rename it to `index.html` so it loads at the root.)
+1. Host `index.html` somewhere with HTTPS — [GitHub Pages](https://pages.github.com) is free and works well. It's already named `index.html`, so it loads at the root automatically.
 2. Open that URL on your phone.
 3. **iPhone (Safari):** Share button → "Add to Home Screen."
    **Android (Chrome):** menu (⋮) → "Install app" / "Add to Home Screen."
